@@ -1,8 +1,8 @@
 const Footer = () => (
-  <footer className="bg-white border-t border-gray-200 py-4 mt-auto">
-    <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500">
+  <footer className="border-t py-3 mt-auto" style={{ borderColor: 'var(--border)', background: 'var(--bg-secondary)' }}>
+    <p className="text-center text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'DM Sans' }}>
       © 2024 CycleRent AI — Smart Cycling Platform
-    </div>
+    </p>
   </footer>
 );
 export default Footer;

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import PrivateRoute from './routes/PrivateRoute';
 import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
@@ -18,7 +19,7 @@ import MapView from './pages/MapView';
 import AIInsights from './pages/AIInsights';
 
 const AppLayout = () => (
-  <div className="min-h-screen bg-gray-50 flex flex-col">
+  <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
     <Navbar />
     <div className="flex flex-1">
       <Sidebar />
@@ -31,27 +32,44 @@ const AppLayout = () => (
 );
 
 const App = () => (
-  <AuthProvider>
-    <BrowserRouter>
-      <Toaster position="top-right" toastOptions={{ duration: 3000, style: { borderRadius: '10px', fontSize: '14px' } }} />
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="cycles/:id" element={<CycleDetails />} />
-          <Route path="booking/:cycleId" element={<Booking />} />
-          <Route path="my-rides" element={<MyRides />} />
-          <Route path="history" element={<History />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="map" element={<MapView />} />
-          <Route path="ai-insights" element={<AIInsights />} />
-        </Route>
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
-    </BrowserRouter>
-  </AuthProvider>
+  <ThemeProvider>
+    <AuthProvider>
+      <BrowserRouter>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              borderRadius: '12px',
+              fontSize: '13px',
+              fontFamily: 'DM Sans, sans-serif',
+              fontWeight: 500,
+              background: 'var(--bg-card)',
+              color: 'var(--text-primary)',
+              border: '1px solid var(--border)',
+              boxShadow: 'var(--shadow-lg)',
+            },
+          }}
+        />
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="cycles/:id" element={<CycleDetails />} />
+            <Route path="booking/:cycleId" element={<Booking />} />
+            <Route path="my-rides" element={<MyRides />} />
+            <Route path="history" element={<History />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="map" element={<MapView />} />
+            <Route path="ai-insights" element={<AIInsights />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  </ThemeProvider>
 );
 
 export default App;

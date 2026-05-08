@@ -1,38 +1,50 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Bike, LogOut, User, BarChart2, Home } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
+import { Sun, Moon, Bike, Bell, LogOut } from 'lucide-react';
 
 const Navbar = () => {
-  const { user, logout, isAdmin } = useAuth();
+  const { user, logout } = useAuth();
+  const { dark, toggle } = useTheme();
   const navigate = useNavigate();
 
-  const handleLogout = () => { logout(); navigate('/login'); };
-
   return (
-    <nav className="bg-white shadow-md border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <Link to="/dashboard" className="flex items-center space-x-2 text-blue-600 font-bold text-xl">
-            <Bike size={28} />
-            <span>CycleRent AI</span>
-          </Link>
-          <div className="flex items-center space-x-1">
-            <Link to="/dashboard" className="flex items-center px-3 py-2 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 text-sm font-medium transition-colors">
-              <Home size={16} className="mr-1" /> Home
-            </Link>
-            <Link to="/my-rides" className="flex items-center px-3 py-2 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 text-sm font-medium transition-colors">
-              <Bike size={16} className="mr-1" /> My Rides
-            </Link>
-            <Link to="/ai-insights" className="flex items-center px-3 py-2 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 text-sm font-medium transition-colors">
-              <BarChart2 size={16} className="mr-1" /> AI Insights
-            </Link>
-            <Link to="/profile" className="flex items-center px-3 py-2 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 text-sm font-medium transition-colors">
-              <User size={16} className="mr-1" /> {user?.name?.split(' ')[0]}
-            </Link>
-            <button onClick={handleLogout} className="flex items-center px-3 py-2 rounded-lg text-red-500 hover:bg-red-50 text-sm font-medium transition-colors">
-              <LogOut size={16} className="mr-1" /> Logout
-            </button>
+    <nav className="sticky top-0 z-50 border-b backdrop-blur-md" style={{ background: 'var(--nav-bg)', borderColor: 'var(--border)' }}>
+      <div className="max-w-7xl mx-auto px-5 h-15 flex items-center justify-between" style={{ height: '60px' }}>
+        {/* Logo */}
+        <Link to="/dashboard" className="flex items-center gap-2 group">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg,var(--accent),var(--accent-dark))' }}>
+            <Bike size={16} color="#fff" />
           </div>
+          <span className="text-base font-extrabold tracking-tight" style={{ fontFamily: 'Syne', color: 'var(--text-primary)' }}>
+            Cycle<span style={{ color: 'var(--accent)' }}>Rent</span>
+          </span>
+        </Link>
+
+        {/* Right */}
+        <div className="flex items-center gap-2">
+          {/* Theme toggle */}
+          <button onClick={toggle} className="w-9 h-9 rounded-lg flex items-center justify-center transition-all" style={{ background: 'var(--bg-input)', color: 'var(--text-secondary)' }}
+            title={dark ? 'Light mode' : 'Dark mode'}>
+            {dark ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
+
+          {/* User pill */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: 'var(--bg-input)', border: '1px solid var(--border)' }}>
+            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
+              style={{ background: 'linear-gradient(135deg,var(--accent),var(--accent-dark))' }}>
+              {user?.name?.[0]?.toUpperCase()}
+            </div>
+            <span className="text-sm font-semibold hidden sm:block" style={{ fontFamily: 'Syne', color: 'var(--text-primary)' }}>
+              {user?.name?.split(' ')[0]}
+            </span>
+          </div>
+
+          <button onClick={() => { logout(); navigate('/login'); }}
+            className="w-9 h-9 rounded-lg flex items-center justify-center transition-all hover:bg-red-500/10"
+            style={{ color: 'var(--danger)' }} title="Logout">
+            <LogOut size={16} />
+          </button>
         </div>
       </div>
     </nav>

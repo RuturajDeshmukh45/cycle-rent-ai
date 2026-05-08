@@ -2,9 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getCycleById } from '../services/cycle.service';
 import useFetch from '../hooks/useFetch';
 import Loader from '../components/comman/Loader';
-import Button from '../components/comman/Button';
-import { formatCurrency, getCycleTypeIcon } from '../utils/helpers';
-import { MapPin, Clock, Star, Zap } from 'lucide-react';
+import { MapPin, Zap, Mountain, Bike, ChevronLeft, Star } from 'lucide-react';
 
 const CycleDetails = () => {
   const { id } = useParams();
@@ -12,44 +10,82 @@ const CycleDetails = () => {
   const { data: cycle, loading } = useFetch(() => getCycleById(id), [id]);
 
   if (loading) return <Loader />;
-  if (!cycle) return <div className="p-6 text-center text-gray-500">Cycle not found</div>;
+  if (!cycle) return (
+    <div className="p-6 text-center py-20">
+      <p style={{ color: 'var(--text-secondary)' }}>Cycle not found</p>
+    </div>
+  );
+
+  const isAvailable = cycle.status === 'available';
+  const typeColors = { electric: '#f59e0b', mountain: '#10b981', standard: '#38bdf8' };
+  const typeColor = typeColors[cycle.cycle_type] || '#38bdf8';
+  const typeEmoji = cycle.cycle_type === 'electric' ? '⚡' : cycle.cycle_type === 'mountain' ? '🏔️' : '🚲';
+
+  const specs = [
+    { label: 'Type', value: cycle.cycle_type?.charAt(0).toUpperCase() + cycle.cycle_type?.slice(1) },
+    { label: 'Status', value: cycle.status },
+    { label: 'Location', value: cycle.location },
+    { label: 'Price/hr', value: `₹${cycle.price_per_hour}` },
+  ];
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <button onClick={() => navigate(-1)} className="text-blue-600 text-sm mb-4 hover:underline">← Back</button>
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-100 h-48 flex items-center justify-center text-8xl">
-          {getCycleTypeIcon(cycle.cycle_type)}
+    <div className="p-6 max-w-2xl mx-auto page-enter">
+      <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm mb-5 transition-colors"
+        style={{ color: 'var(--text-secondary)', fontFamily: 'Syne' }}>
+        <ChevronLeft size={16} /> Back
+      </button>
+
+      <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-lg)' }}>
+        {/* Hero */}
+        <div className="h-48 flex items-center justify-center relative overflow-hidden" style={{ background: 'var(--gradient-card)' }}>
+          <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at center, ${typeColor}20, transparent 70%)` }} />
+          <div className="relative text-center">
+            <div className="text-7xl mb-2">{typeEmoji}</div>
+            <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${isAvailable ? 'badge-available' : 'badge-booked'}`} style={{ fontFamily: 'Syne' }}>
+              <span className={`w-1.5 h-1.5 rounded-full ${isAvailable ? 'bg-emerald-400' : 'bg-red-400'}`} />
+              {isAvailable ? 'Available Now' : 'Not Available'}
+            </div>
+          </div>
         </div>
+
         <div className="p-6">
-          <div className="flex justify-between items-start mb-4">
+          {/* Name & price */}
+          <div className="flex justify-between items-start mb-5">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{cycle.name}</h1>
-              <div className="flex items-center text-gray-500 text-sm mt-1">
-                <MapPin size={14} className="mr-1" /> {cycle.location}
+              <h1 className="text-2xl font-extrabold" style={{ fontFamily: 'Syne', color: 'var(--text-primary)' }}>{cycle.name}</h1>
+              <div className="flex items-center gap-1 mt-1" style={{ color: 'var(--text-muted)' }}>
+                <MapPin size={13} /> <span className="text-sm">{cycle.location}</span>
               </div>
             </div>
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${cycle.status === 'available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-              {cycle.status}
-            </span>
-          </div>
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-blue-50 rounded-lg p-3">
-              <p className="text-xs text-gray-500">Price per hour</p>
-              <p className="text-xl font-bold text-blue-600">{formatCurrency(cycle.price_per_hour)}</p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-3">
-              <p className="text-xs text-gray-500">Cycle Type</p>
-              <p className="text-sm font-semibold capitalize">{cycle.cycle_type}</p>
+            <div className="text-right">
+              <div className="text-2xl font-extrabold" style={{ fontFamily: 'Syne', color: 'var(--accent)' }}>₹{cycle.price_per_hour}</div>
+              <div className="text-xs" style={{ color: 'var(--text-muted)' }}>per hour</div>
             </div>
           </div>
-          {cycle.description && <p className="text-gray-600 text-sm mb-6">{cycle.description}</p>}
-          {cycle.status === 'available' ? (
-            <Button className="w-full" size="lg" onClick={() => navigate(`/booking/${cycle.id}`)}>
-              Rent This Cycle 🚲
-            </Button>
+
+          {/* Specs grid */}
+          <div className="grid grid-cols-2 gap-3 mb-5">
+            {specs.map(({ label, value }) => (
+              <div key={label} className="rounded-xl p-3" style={{ background: 'var(--bg-input)', border: '1px solid var(--border)' }}>
+                <p className="text-xs mb-0.5 uppercase tracking-wider" style={{ color: 'var(--text-muted)', fontFamily: 'Syne' }}>{label}</p>
+                <p className="text-sm font-bold capitalize" style={{ color: 'var(--text-primary)', fontFamily: 'Syne' }}>{value}</p>
+              </div>
+            ))}
+          </div>
+
+          {cycle.description && (
+            <div className="mb-5 rounded-xl p-4" style={{ background: 'var(--bg-input)', border: '1px solid var(--border)' }}>
+              <p className="text-xs font-semibold mb-1 uppercase tracking-wider" style={{ color: 'var(--text-muted)', fontFamily: 'Syne' }}>About this ride</p>
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{cycle.description}</p>
+            </div>
+          )}
+
+          {isAvailable ? (
+            <button className="btn-primary w-full py-3 text-sm" onClick={() => navigate(`/booking/${cycle.id}`)}>
+              🚲 Rent This Cycle
+            </button>
           ) : (
-            <Button className="w-full" size="lg" disabled>Currently Unavailable</Button>
+            <button className="btn-secondary w-full py-3 text-sm cursor-not-allowed" disabled>Currently Unavailable</button>
           )}
         </div>
       </div>

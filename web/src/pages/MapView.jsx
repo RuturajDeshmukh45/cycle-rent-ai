@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import { getAllCycles } from '../services/cycle.service';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../components/comman/Loader';
-import { formatCurrency } from '../utils/helpers';
-import { MapPin } from 'lucide-react';
+import { MapPin, Bike } from 'lucide-react';
 
 const MapView = () => {
   const [cycles, setCycles] = useState([]);
@@ -12,62 +11,68 @@ const MapView = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    getAllCycles().then(res => { setCycles(res.data.data || []); setLoading(false); }).catch(() => setLoading(false));
+    getAllCycles().then(r => { setCycles(r.data.data || []); setLoading(false); }).catch(() => setLoading(false));
   }, []);
 
-  if (loading) return <Loader text="Loading map..." />;
+  if (loading) return <Loader text="Loading stations..." />;
 
-  // Group by location
   const stations = {};
-  cycles.forEach(c => {
-    if (!stations[c.location]) stations[c.location] = [];
-    stations[c.location].push(c);
-  });
+  cycles.forEach(c => { if (!stations[c.location]) stations[c.location] = []; stations[c.location].push(c); });
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Cycle Map</h1>
-      <p className="text-gray-500 text-sm mb-6">All cycle stations near you</p>
-      
-      {/* Station grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {Object.entries(stations).map(([location, locationCycles]) => {
-          const available = locationCycles.filter(c => c.status === 'available').length;
+    <div className="p-6 max-w-4xl mx-auto page-enter">
+      <h1 className="text-2xl font-extrabold mb-1" style={{ fontFamily: 'Syne', color: 'var(--text-primary)' }}>Map View</h1>
+      <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>Browse all cycle stations</p>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {Object.entries(stations).map(([location, stCycles]) => {
+          const available = stCycles.filter(c => c.status === 'available').length;
+          const isSelected = selected === location;
           return (
-            <div
-              key={location}
-              className={`bg-white rounded-xl border-2 p-4 cursor-pointer transition-all ${selected === location ? 'border-blue-500 shadow-md' : 'border-gray-100 hover:border-blue-200'}`}
-              onClick={() => setSelected(selected === location ? null : location)}
+            <div key={location}
+              className="rounded-2xl overflow-hidden cursor-pointer transition-all"
+              style={{ background: 'var(--bg-card)', border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--border)'}`, boxShadow: isSelected ? 'var(--shadow-accent)' : 'var(--shadow-sm)' }}
+              onClick={() => setSelected(isSelected ? null : location)}
             >
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center space-x-2">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${available > 0 ? 'bg-green-100' : 'bg-red-100'}`}>
-                    <MapPin size={20} className={available > 0 ? 'text-green-600' : 'text-red-500'} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{location}</h3>
-                    <p className="text-xs text-gray-500">{locationCycles.length} cycles total</p>
-                  </div>
-                </div>
-                <span className={`text-xs font-semibold px-2 py-1 rounded-full ${available > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
-                  {available} available
-                </span>
-              </div>
-              {selected === location && (
-                <div className="mt-3 space-y-2">
-                  {locationCycles.map(c => (
-                    <div key={c.id} className="flex items-center justify-between bg-gray-50 rounded-lg p-2">
-                      <span className="text-sm text-gray-700">{c.name}</span>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xs text-blue-600 font-medium">{formatCurrency(c.price_per_hour)}/hr</span>
-                        {c.status === 'available' && (
-                          <button onClick={() => navigate(`/booking/${c.id}`)} className="text-xs bg-blue-600 text-white px-2 py-1 rounded-md hover:bg-blue-700">Rent</button>
-                        )}
-                      </div>
+              {isSelected && <div className="h-0.5" style={{ background: 'linear-gradient(90deg,var(--accent),transparent)' }} />}
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center`}
+                      style={{ background: available > 0 ? 'rgba(16,185,129,0.1)' : 'rgba(244,63,94,0.1)' }}>
+                      <MapPin size={15} style={{ color: available > 0 ? 'var(--success)' : 'var(--danger)' }} />
                     </div>
-                  ))}
+                    <div>
+                      <h3 className="font-bold text-sm" style={{ fontFamily: 'Syne', color: 'var(--text-primary)' }}>{location}</h3>
+                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{stCycles.length} cycles total</p>
+                    </div>
+                  </div>
+                  <span className={`badge ${available > 0 ? 'badge-available' : 'badge-cancelled'}`} style={{ fontFamily: 'Syne' }}>
+                    {available} free
+                  </span>
                 </div>
-              )}
+
+                {isSelected && (
+                  <div className="mt-3 space-y-1.5 border-t pt-3" style={{ borderColor: 'var(--border)' }}>
+                    {stCycles.map(c => (
+                      <div key={c.id} className="flex items-center justify-between rounded-xl p-2.5" style={{ background: 'var(--bg-input)' }}>
+                        <div className="flex items-center gap-2">
+                          <span className="text-base">{c.cycle_type === 'electric' ? '⚡' : c.cycle_type === 'mountain' ? '🏔️' : '🚲'}</span>
+                          <div>
+                            <p className="text-xs font-semibold" style={{ fontFamily: 'Syne', color: 'var(--text-primary)' }}>{c.name}</p>
+                            <p className="text-xs" style={{ color: 'var(--accent)' }}>₹{c.price_per_hour}/hr</p>
+                          </div>
+                        </div>
+                        {c.status === 'available' ? (
+                          <button className="btn-primary text-xs px-3 py-1.5" onClick={(e) => { e.stopPropagation(); navigate(`/booking/${c.id}`); }}>
+                            Rent
+                          </button>
+                        ) : <span className="badge badge-booked text-xs">Booked</span>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           );
         })}
