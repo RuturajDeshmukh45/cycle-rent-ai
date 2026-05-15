@@ -6,6 +6,7 @@ class CycleRepository {
     const where = {};
     if (filters.status) where.status = filters.status;
     if (filters.location) where.location = { [Op.like]: `%${filters.location}%` };
+    if (filters.cycle_type) where.cycle_type = filters.cycle_type;
     return Cycle.findAll({ where, order: [['createdAt', 'DESC']] });
   }
   async findById(id) {
@@ -20,6 +21,9 @@ class CycleRepository {
   }
   async updateStatus(id, status) {
     return Cycle.update({ status }, { where: { id } });
+  }
+  async delete(id) {
+    return Cycle.destroy({ where: { id } });
   }
 }
 

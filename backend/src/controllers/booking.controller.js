@@ -92,3 +92,25 @@ exports.getAllBookings = async (req, res, next) => {
     return successResponse(res, bookings, 'All bookings fetched');
   } catch (err) { next(err); }
 };
+
+exports.getAdminStats = async (req, res, next) => {
+  try {
+    const { Booking, Cycle, User } = require('../models');
+    const [totalBookings, activeBookings, completedBookings, cancelledBookings,
+      totalCycles, availableCycles, totalUsers] = await Promise.all([
+      Booking.count(),
+      Booking.count({ where: { status: ['active', 'booked'] } }),
+      Booking.count({ where: { status: 'completed' } }),
+      Booking.count({ where: { status: 'cancelled' } }),
+      Cycle.count(),
+      Cycle.count({ where: { status: 'available' } }),
+      User.count({ where: { role: 'user' } }),
+    ]);
+    const revenueResult = await Booking.sum('total_cost', { where: { status: 'completed' } });
+    return successResponse(res, {
+      totalBookings, activeBookings, completedBookings, cancelledBookings,
+      totalCycles, availableCycles, totalUsers,
+      totalRevenue: revenueResult || 0,
+    }, 'Admin stats fetched');
+  } catch (err) { next(err); }
+};

@@ -1,11 +1,12 @@
 require('dotenv').config();
 const app = require('./app');
 const { sequelize } = require('./models');
-const { Cycle } = require('./models');
+const { Cycle, User } = require('./models');
 
 const PORT = process.env.PORT || 5000;
 
 const seedData = async () => {
+  // ── Seed sample cycles ──
   const count = await Cycle.count();
   if (count === 0) {
     await Cycle.bulkCreate([
@@ -18,15 +19,43 @@ const seedData = async () => {
     ]);
     console.log('✅ Sample cycles seeded');
   }
+
+  // ── Seed default admin user ──
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@ecocycle.com';
+  const existingAdmin = await User.findOne({ where: { email: adminEmail } });
+  if (!existingAdmin) {
+    await User.create({
+      name: 'Admin',
+      email: adminEmail,
+      password: process.env.ADMIN_PASSWORD || 'Admin@123',
+      role: 'admin',
+      phone: '9579180893',
+    });
+    console.log(`✅ Admin user created → Email: ${adminEmail} | Password: ${process.env.ADMIN_PASSWORD || 'Admin@123'}`);
+  } else {
+    console.log(`ℹ️  Admin already exists → ${adminEmail}`);
+  }
 };
 
 sequelize.sync({ alter: true })
   .then(async () => {
     console.log('✅ Database synced');
     await seedData();
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
       console.log(`📡 API: http://localhost:${PORT}/api`);
+    });
+
+    server.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        console.error(`\n❌ Port ${PORT} is already in use!`);
+        console.error(`   Fix: Run this command to free the port:`);
+        console.error(`   Windows:  netstat -ano | findstr :${PORT}  → then  taskkill /PID <PID> /F`);
+        console.error(`   Mac/Linux: lsof -ti:${PORT} | xargs kill -9\n`);
+        process.exit(1);
+      } else {
+        throw err;
+      }
     });
   })
   .catch((err) => {

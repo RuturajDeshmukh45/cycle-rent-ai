@@ -12,6 +12,8 @@ const Booking = sequelize.define('Booking', {
   status: { type: DataTypes.ENUM('booked', 'active', 'completed', 'cancelled'), defaultValue: 'booked' },
   pickup_location: { type: DataTypes.STRING(255), allowNull: true },
   drop_location: { type: DataTypes.STRING(255), allowNull: true },
+  drop_lat: { type: DataTypes.DECIMAL(10, 8), allowNull: true },
+  drop_lng: { type: DataTypes.DECIMAL(11, 8), allowNull: true },
 }, {
   tableName: 'bookings',
   timestamps: true,
