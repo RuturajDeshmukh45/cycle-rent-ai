@@ -9,12 +9,15 @@ const authRoutes = require('./routes/auth.routes');
 const cycleRoutes = require('./routes/cycle.routes');
 const bookingRoutes = require('./routes/booking.routes');
 const aiRoutes = require('./routes/ai.routes');
+const reviewRoutes = require('./routes/review.routes');
 
 const app = express();
 
-// Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, '../uploads/cycles');
-if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+// Ensure uploads directories exist
+['../uploads/cycles', '../uploads/avatars'].forEach(rel => {
+  const dir = path.join(__dirname, rel);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+});
 
 app.use(cors({ origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], allowedHeaders: ['Content-Type', 'Authorization'] }));
 app.use(express.json());
@@ -53,6 +56,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/cycles', cycleRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
